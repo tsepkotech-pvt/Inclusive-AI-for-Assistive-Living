@@ -1,0 +1,7 @@
+{
+  "name": "Inclusive AI for Assistive Living",
+  "description": "A computer vision application using MediaPipe Pose to monitor fall risks and provide assistive alerts for elderly or disabled individuals.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

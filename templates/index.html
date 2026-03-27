@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inclusive AI Assistive Living - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .pulse-red {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col items-center p-6">
+
+    <div class="max-w-5xl w-full space-y-8">
+        <!-- Header -->
+        <header class="flex justify-between items-end border-b border-slate-800 pb-6">
+            <div>
+                <h1 class="text-3xl font-black tracking-tight text-white uppercase">Inclusive AI</h1>
+                <p class="text-slate-400 font-medium">Assistive Living & Fall Detection System</p>
+            </div>
+            <div class="text-right">
+                <div id="clock" class="text-xl font-mono font-bold text-indigo-400">00:00:00</div>
+                <div class="text-xs uppercase tracking-widest text-slate-500">System Live</div>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Video Feed Section -->
+            <div class="lg:col-span-2 space-y-4">
+                <div class="relative rounded-3xl overflow-hidden border-4 border-slate-800 shadow-2xl bg-black aspect-video">
+                    <img src="{{ url_for('video_feed') }}" class="w-full h-full object-cover" alt="Live Feed">
+                    <div class="absolute top-4 left-4 flex items-center gap-2 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-full border border-slate-700">
+                        <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider">Live Stream</span>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-1 bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">Detection Model</span>
+                        <p class="font-bold text-indigo-300">MediaPipe Pose v1.0</p>
+                    </div>
+                    <div class="flex-1 bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">Alert Protocol</span>
+                        <p class="font-bold text-indigo-300">SMTP/SSL Port 465</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status & Control Section -->
+            <div class="space-y-6">
+                <!-- Status Card -->
+                <div id="status-card" class="status-card h-64 rounded-3xl flex flex-col items-center justify-center text-center p-8 bg-emerald-500/10 border-2 border-emerald-500/50">
+                    <div id="status-icon" class="mb-4">
+                        <svg class="w-16 h-16 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">System Status</span>
+                    <h2 id="status-text" class="text-2xl font-black text-emerald-500">STATUS: SAFE</h2>
+                </div>
+
+                <!-- Alert Info -->
+                <div class="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-white">Alert Settings</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500">Detection</span>
+                            <span class="font-bold text-slate-300">1.0 Second</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500">Notification</span>
+                            <span class="font-bold text-emerald-400">Email Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Logic -->
+                <div class="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-white">System Logic</h3>
+                    <ul class="text-xs text-slate-400 space-y-2">
+                        <li><span class="text-indigo-400 font-bold">0-1s:</span> Posture Analysis</li>
+                        <li><span class="text-indigo-400 font-bold">1s:</span> NOT SAFE - RISK (Caregiver Notified)</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center text-slate-600 text-xs pt-8">
+            Inclusive AI Assistive Living &copy; 2026. Optimized for Emergency Response.
+        </footer>
+    </div>
+
+    <script>
+        // Update Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toTimeString().split(' ')[0];
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Poll Status
+        async function checkStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                const card = document.getElementById('status-card');
+                const text = document.getElementById('status-text');
+                const icon = document.getElementById('status-icon');
+
+                if (data.status === "NOT SAFE - RISK") {
+                    card.className = "status-card h-64 rounded-3xl flex flex-col items-center justify-center text-center p-8 bg-red-600 border-2 border-red-500 pulse-red shadow-2xl shadow-red-900/50";
+                    text.innerText = data.status;
+                    text.className = "text-2xl font-black text-white";
+                    icon.innerHTML = '<svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+                } else {
+                    card.className = "status-card h-64 rounded-3xl flex flex-col items-center justify-center text-center p-8 bg-emerald-500/10 border-2 border-emerald-500/50";
+                    text.innerText = "STATUS: SAFE";
+                    text.className = "text-2xl font-black text-emerald-500";
+                    icon.innerHTML = '<svg class="w-16 h-16 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                }
+            } catch (e) {
+                console.error("Status check failed", e);
+            }
+        }
+        setInterval(checkStatus, 1000);
+    </script>
+</body>
+</html>
